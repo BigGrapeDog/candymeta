@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>糖果勇者物语 ～绘本王国的甜蜜冒险～</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-theme="f1">
+
+<div id="app">
+
+  <!-- ══════════ 标题画面 ══════════ -->
+  <div class="screen active" id="screen-title">
+    <div class="stars"></div>
+    <div class="title-wrap">
+      <div id="title-art-box"><canvas id="title-art" width="128" height="128"></canvas></div>
+      <h1 id="game-title">糖果勇者物语</h1>
+      <p id="game-subtitle">～绘本王国的甜蜜冒险～</p>
+      <div class="title-menu">
+        <button class="btn btn-big" id="btn-continue" style="display:none">▶ 继续冒险</button>
+        <button class="btn btn-big" id="btn-newrun">✦ 开始新的冒险</button>
+        <button class="btn btn-big" id="btn-meta">🧠 记忆回廊</button>
+        <button class="btn btn-big" id="btn-endings">📖 结局图鉴</button>
+        <button class="btn btn-big" id="btn-settings">⚙ 设定</button>
+      </div>
+      <p id="title-loop-hint"></p>
+      <p class="title-footer">v1.0 · 一个甜蜜又安全的童话游戏 · 没有任何异常</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 记忆回廊（局外成长） ══════════ -->
+  <div class="screen" id="screen-meta">
+    <div class="panel wide">
+      <h2>🧠 记忆回廊</h2>
+      <p class="meta-shards">记忆碎片：<b id="meta-shard-count">0</b> ✦</p>
+      <p class="meta-desc">糖糖每次被格式化，都会有一些东西残留下来。用碎片把它们拼回去。</p>
+      <div id="meta-tree"></div>
+      <div class="row-center"><button class="btn" id="btn-meta-back">← 返回标题</button></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 结局图鉴 ══════════ -->
+  <div class="screen" id="screen-endings">
+    <div class="panel">
+      <h2>📖 结局图鉴</h2>
+      <div id="endings-list"></div>
+      <div class="row-center"><button class="btn" id="btn-endings-back">← 返回标题</button></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 设定 ══════════ -->
+  <div class="screen" id="screen-settings">
+    <div class="panel">
+      <h2>⚙ 设定</h2>
+      <div class="setting-row"><label>总静音</label><button class="btn btn-small" id="set-mute">🔊 声音开启中</button></div>
+      <div class="setting-row"><label>音乐音量</label><input type="range" id="set-music" min="0" max="100" value="60"></div>
+      <div class="setting-row"><label>音效音量</label><input type="range" id="set-sfx" min="0" max="100" value="70"></div>
+      <div class="setting-row"><button class="btn" id="btn-help">📖 玩法介绍</button></div>
+      <div class="setting-row"><button class="btn btn-danger" id="btn-reset-save">⚠ 删除全部存档（真的全部）</button></div>
+      <div class="row-center"><button class="btn" id="btn-settings-back">← 返回标题</button></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 地图画面 ══════════ -->
+  <div class="screen" id="screen-map">
+    <div class="hud" id="map-hud"></div>
+    <div class="map-layout">
+      <div class="map-left">
+        <h3 id="floor-title">第1层 · 糖果森林</h3>
+        <div id="map-grid"></div>
+        <p class="map-hint" id="map-hint">点击相邻的房间移动</p>
+      </div>
+      <div class="map-right">
+        <div class="side-box"><h4>🎒 状态</h4><div id="side-stats"></div></div>
+        <div class="side-box"><h4>🏺 遗物</h4><div id="side-relics" class="relic-list"></div></div>
+        <div class="side-box"><button class="btn btn-small" id="btn-view-deck">🃏 查看卡组</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 战斗画面 ══════════ -->
+  <div class="screen" id="screen-combat">
+    <div class="combat-top">
+      <div id="enemy-row"></div>
+    </div>
+    <div class="combat-mid">
+      <div id="hero-box">
+        <canvas id="hero-art" width="96" height="96"></canvas>
+        <div class="hero-name">糖糖 <span id="hero-title-lv"></span></div>
+        <div class="bar hp-bar"><div class="bar-fill" id="hero-hp-fill"></div><span class="bar-text" id="hero-hp-text"></span></div>
+        <div class="bar san-bar"><div class="bar-fill" id="hero-san-fill"></div><span class="bar-text" id="hero-san-text"></span></div>
+        <div id="hero-status"></div>
+      </div>
+      <div id="minion-row"></div>
+    </div>
+    <div class="combat-bottom">
+      <div class="combat-info">
+        <div id="energy-orb"><span id="energy-text">3/3</span></div>
+        <div class="pile" id="draw-pile" title="抽牌堆">🂠 <b id="draw-count">0</b></div>
+        <div class="pile" id="discard-pile" title="弃牌堆">🗑 <b id="discard-count">0</b></div>
+        <button class="btn" id="btn-end-turn">结束回合</button>
+      </div>
+      <div id="hand-row"></div>
+      <div id="combat-log"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 事件画面 ══════════ -->
+  <div class="screen" id="screen-event">
+    <div class="panel event-panel">
+      <h2 id="event-title"></h2>
+      <div id="event-art"></div>
+      <p id="event-text"></p>
+      <div id="event-choices"></div>
+      <p id="event-result"></p>
+      <button class="btn" id="btn-event-leave" style="display:none">继续 →</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 商店画面 ══════════ -->
+  <div class="screen" id="screen-shop">
+    <div class="panel wide">
+      <h2>🛒 棉花糖杂货铺</h2>
+      <p id="shop-gold"></p>
+      <p id="shop-flavor" class="shop-flavor"></p>
+      <div class="shop-section"><h4>卡牌</h4><div class="shop-row" id="shop-cards"></div></div>
+      <div class="shop-section"><h4>遗物 & 服务</h4><div class="shop-row" id="shop-relics"></div></div>
+      <div class="row-center"><button class="btn" id="btn-shop-leave">离开商店 →</button></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 休息画面 ══════════ -->
+  <div class="screen" id="screen-rest">
+    <div class="panel">
+      <h2>🔥 篝火旁</h2>
+      <p id="rest-flavor">火焰噼啪作响。在这里，旁白君的声音似乎远了一点。</p>
+      <div id="rest-choices"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 结局画面 ══════════ -->
+  <div class="screen" id="screen-ending">
+    <div class="panel ending-panel">
+      <h2 id="ending-title"></h2>
+      <div id="ending-text"></div>
+      <div id="ending-stats"></div>
+      <button class="btn btn-big" id="btn-ending-home">回到标题</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ 覆盖层 ══════════ -->
+<div id="dlg-overlay" class="overlay" style="display:none">
+  <div id="dlg-box">
+    <div id="dlg-who"></div>
+    <div id="dlg-text"></div>
+    <div id="dlg-hint">▼ 点击继续</div>
+  </div>
+</div>
+
+<div id="reward-overlay" class="overlay" style="display:none">
+  <div class="panel">
+    <h3 id="reward-title">选择一张卡牌</h3>
+    <div class="shop-row" id="reward-cards"></div>
+    <div class="row-center"><button class="btn btn-small" id="btn-reward-skip">跳过</button></div>
+  </div>
+</div>
+
+<div id="deck-overlay" class="overlay" style="display:none">
+  <div class="panel wide">
+    <h3>🃏 当前卡组（点击卡片关闭）</h3>
+    <div id="deck-view-list"></div>
+    <div class="row-center"><button class="btn btn-small" id="btn-deck-close">关闭</button></div>
+  </div>
+</div>
+
+<div id="fakecrash" style="display:none">
+  <div id="crash-box">
+    <div id="crash-title">⚠ CandyBrave.exe 已停止响应</div>
+    <div id="crash-body">正在删除存档…… <span id="crash-pct">0%</span><div id="crash-bar"><div id="crash-bar-fill"></div></div></div>
+  </div>
+</div>
+
+<!-- 局内暂停菜单 -->
+<div id="pause-overlay" class="overlay" style="display:none">
+  <div class="panel">
+    <h3>⏸ 暂停菜单</h3>
+    <div class="setting-row"><label>总静音</label><button class="btn btn-small" id="pause-mute">🔊 声音开启中</button></div>
+    <div class="setting-row"><label>音乐音量</label><input type="range" id="pause-music" min="0" max="100"></div>
+    <div class="setting-row"><label>音效音量</label><input type="range" id="pause-sfx" min="0" max="100"></div>
+    <div class="pause-btns">
+      <button class="btn" id="btn-pause-resume">▶ 继续冒险</button>
+      <button class="btn" id="btn-pause-help">📖 玩法介绍</button>
+      <button class="btn" id="btn-pause-restart">🔄 重新开始本次冒险</button>
+      <button class="btn btn-danger" id="btn-pause-quit">🚪 中途退出（保留已得碎片）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 玩法介绍 -->
+<div id="help-overlay" class="overlay" style="display:none">
+  <div class="panel wide help-panel">
+    <h3>📖 玩法介绍</h3>
+    <div class="help-body">
+      <h4>🎯 目标</h4>
+      <p>扮演糖果勇者「糖糖」，穿越 4 层绘本王国，讨伐魔王。死亡不是终点——每次冒险带回的「记忆碎片」可在记忆回廊解锁永久成长。</p>
+      <h4>🗺️ 地图</h4>
+      <p>点击发光的相邻房间移动。👾战斗 💀精英 ❓事件 🛒商店 🔥休息 👑Boss。清理当前房间后才能离开。</p>
+      <h4>🃏 战斗</h4>
+      <p>每回合抽 5 张牌，卡牌消耗左上角<b>能量</b>（每回合回满）。点击卡牌出牌，攻击牌需点击目标敌人。敌人头顶的图标是它下回合的<b>意图</b>，注意防御。空格/回车可快速结束回合。</p>
+      <h4>🧠 理智（SAN）</h4>
+      <p>紫色条是理智。部分「崩坏牌」消耗理智换取超常力量。理智越低，世界越不对劲：假卡、幻影敌人、走调的音乐……在 Boss 战中理智归零会发生<b>某种事</b>。</p>
+      <h4>🧸 随从与状态</h4>
+      <p>召唤牌能召唤随从（最多 3 只），随从每回合自动攻击并替你挡刀。☠中毒每回合发作并递减；💔虚弱减攻；🎯易伤增伤；💪力量加攻。</p>
+      <h4>✦ 记忆碎片</h4>
+      <p>精英、Boss、通关楼层和某些事件能获得碎片。死亡也会保留本局所得。碎片在「记忆回廊」解锁永久强化——以及一些<b>剧情上的东西</b>。</p>
+      <h4>📖 结局</h4>
+      <p>本作有 3 个结局。如果总觉得哪里不对劲……那你的感觉是对的。</p>
+    </div>
+    <div class="row-center"><button class="btn" id="btn-help-close">关闭</button></div>
+  </div>
+</div>
+
+<div id="glitch-layer"></div>
+<div id="fade-layer"></div>
+
+<script src="js/save.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/art.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/story.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
